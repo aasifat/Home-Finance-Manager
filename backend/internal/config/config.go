@@ -75,6 +75,7 @@ func Load() *Config {
 
 func (c *Config) DSN() string {
 	if dbURL := os.Getenv("DATABASE_URL"); dbURL != "" {
+		dbURL = strings.Replace(dbURL, "postgresql://", "postgres://", 1)
 		return dbURL
 	}
 
@@ -88,7 +89,6 @@ func (c *Config) DSN() string {
 		c.DBSSLMode,
 	)
 }
-
 func getEnv(key, fallback string) string {
 	if v, ok := os.LookupEnv(key); ok && v != "" {
 		return v
