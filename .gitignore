@@ -1,0 +1,14 @@
+# Frontend
+frontend/node_modules/
+frontend/dist/
+
+# Backend
+backend/.env
+backend/bin/
+backend/tmp/
+
+# Common
+.env
+.vscode/
+.idea/
+*.log

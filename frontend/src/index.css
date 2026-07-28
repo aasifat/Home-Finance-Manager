@@ -1,0 +1,79 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: #F3F5F0;
+  color: #16211E;
+  font-family: 'Inter', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+.font-tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Ledger card: hairline top rule + subtle paper texture edge */
+.ledger-card {
+  background: #FFFFFF;
+  border: 1px solid #DBD9CE;
+  border-radius: 10px;
+}
+
+/* Perforated / torn-receipt edge for the signature monthly statement card */
+.receipt-edge::before,
+.receipt-edge::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 10px;
+  background-image: radial-gradient(circle at 10px 0, transparent 6px, #F3F5F0 6.5px);
+  background-size: 20px 10px;
+  background-repeat: repeat-x;
+}
+.receipt-edge::before {
+  top: -1px;
+}
+.receipt-edge::after {
+  bottom: -1px;
+  transform: rotate(180deg);
+}
+
+/* Wax-seal style stamp for savings percentage */
+.stamp {
+  border: 2px solid currentColor;
+  border-radius: 999px;
+  position: relative;
+}
+.stamp::before {
+  content: '';
+  position: absolute;
+  inset: 4px;
+  border: 1px dashed currentColor;
+  border-radius: 999px;
+  opacity: 0.5;
+}
+
+@media print {
+  .no-print {
+    display: none !important;
+  }
+}
+
+:focus-visible {
+  outline: 2px solid #C9A227;
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
