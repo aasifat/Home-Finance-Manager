@@ -16,6 +16,11 @@ type Config struct {
 	FrontendOrigin []string
 	FrontendURL    string
 	JWTSecret      string
+	// Production is true when running against a real (non-local) database,
+	// e.g. Render+Neon. The frontend and backend then live on different
+	// domains, so the session cookie must be SameSite=None; Secure to be
+	// sent on cross-site requests — which in turn requires HTTPS.
+	Production bool
 
 	DBHost     string
 	DBPort     string
@@ -56,6 +61,7 @@ func Load() *Config {
 		FrontendOrigin: origins,
 		FrontendURL:    getEnv("FRONTEND_URL", "http://localhost:5173"),
 		JWTSecret:      jwtSecret,
+		Production:     os.Getenv("DATABASE_URL") != "",
 
 		DBHost:     getEnv("DB_HOST", "localhost"),
 		DBPort:     getEnv("DB_PORT", "5432"),

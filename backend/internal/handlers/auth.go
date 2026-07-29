@@ -31,24 +31,37 @@ var defaultBudgets = map[string]float64{
 	"other_expense": 80,
 }
 
-func setAuthCookie(w http.ResponseWriter, token string) {
+// cookieSameSite picks SameSite=None (cross-site, e.g. Vercel calling Render)
+// when running against a production database, and SameSite=Lax for local dev
+// where frontend and backend share the localhost site. None requires Secure,
+// which in turn requires HTTPS — fine in production, broken over plain HTTP.
+func cookieSameSite(production bool) http.SameSite {
+	if production {
+		return http.SameSiteNoneMode
+	}
+	return http.SameSiteLaxMode
+}
+
+func setAuthCookie(w http.ResponseWriter, token string, production bool) {
 	http.SetCookie(w, &http.Cookie{
 		Name:     middleware.AuthCookieName,
 		Value:    token,
 		Path:     "/",
 		HttpOnly: true,
-		SameSite: http.SameSiteLaxMode,
+		Secure:   production,
+		SameSite: cookieSameSite(production),
 		MaxAge:   int(auth.TokenTTL.Seconds()),
 	})
 }
 
-func clearAuthCookie(w http.ResponseWriter) {
+func clearAuthCookie(w http.ResponseWriter, production bool) {
 	http.SetCookie(w, &http.Cookie{
 		Name:     middleware.AuthCookieName,
 		Value:    "",
 		Path:     "/",
 		HttpOnly: true,
-		SameSite: http.SameSiteLaxMode,
+		Secure:   production,
+		SameSite: cookieSameSite(production),
 		MaxAge:   -1,
 	})
 }
@@ -184,7 +197,7 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 		httpx.Error(w, http.StatusInternalServerError, "could not start session")
 		return
 	}
-	setAuthCookie(w, token)
+	setAuthCookie(w, token, h.Cfg.Production)
 	httpx.JSON(w, http.StatusOK, user)
 }
 
@@ -209,6 +222,6 @@ func (h *Handler) Me(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) Logout(w http.ResponseWriter, r *http.Request) {
-	clearAuthCookie(w)
+	clearAuthCookie(w, h.Cfg.Production)
 	httpx.JSON(w, http.StatusOK, nil)
 }
