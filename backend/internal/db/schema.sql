@@ -22,7 +22,7 @@ CREATE TABLE IF NOT EXISTS families (
   user_id INTEGER PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
   name TEXT NOT NULL DEFAULT 'My Household',
   email TEXT,
-  currency TEXT NOT NULL DEFAULT 'USD'
+  currency TEXT NOT NULL DEFAULT 'BDT'
 );
 
 -- People a user has invited (by email) to be notified — informational

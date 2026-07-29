@@ -25,6 +25,13 @@ func (h *Handler) GetFamily(w http.ResponseWriter, r *http.Request) {
 	httpx.JSON(w, http.StatusOK, f)
 }
 
+// supportedCurrencies are the currencies selectable from the Profile page.
+var supportedCurrencies = map[string]bool{
+	"BDT": true,
+	"KRW": true,
+	"USD": true,
+}
+
 func (h *Handler) UpdateFamily(w http.ResponseWriter, r *http.Request) {
 	uid, ok := requireUserID(w, r)
 	if !ok {
@@ -36,9 +43,13 @@ func (h *Handler) UpdateFamily(w http.ResponseWriter, r *http.Request) {
 		httpx.Error(w, http.StatusBadRequest, "invalid body: "+err.Error())
 		return
 	}
+	if in.Currency != "" && !supportedCurrencies[in.Currency] {
+		httpx.Error(w, http.StatusBadRequest, "unsupported currency: "+in.Currency)
+		return
+	}
 	_, err := h.DB.Exec(
-		`UPDATE families SET name = $1, email = $2 WHERE user_id = $3`,
-		in.Name, in.Email, uid,
+		`UPDATE families SET name = $1, email = $2, currency = $3 WHERE user_id = $4`,
+		in.Name, in.Email, in.Currency, uid,
 	)
 	if err != nil {
 		httpx.Error(w, http.StatusInternalServerError, "could not update profile: "+err.Error())

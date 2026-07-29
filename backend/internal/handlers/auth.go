@@ -122,7 +122,7 @@ func (h *Handler) Register(w http.ResponseWriter, r *http.Request) {
 	// already exist (matches what schema.sql used to seed for the old
 	// single shared household).
 	if _, err := tx.Exec(
-		`INSERT INTO families (user_id, name, email, currency) VALUES ($1, $2, $3, 'USD')`,
+		`INSERT INTO families (user_id, name, email, currency) VALUES ($1, $2, $3, 'BDT')`,
 		user.ID, in.FullName+"'s Household", email,
 	); err != nil {
 		httpx.Error(w, http.StatusInternalServerError, "could not set up profile: "+err.Error())

@@ -3,6 +3,7 @@ package config
 import (
 	"fmt"
 	"log"
+	"net/url"
 	"os"
 	"strconv"
 	"strings"
@@ -74,10 +75,34 @@ func Load() *Config {
 }
 
 func (c *Config) DSN() string {
+	// Render sets DATABASE_URL to the Neon connection string; local dev has
+	// no DATABASE_URL and falls back to the DB_* vars (pgAdmin/local Postgres).
+	if dbURL := os.Getenv("DATABASE_URL"); dbURL != "" {
+		return sanitizeDatabaseURL(dbURL)
+	}
+
 	return fmt.Sprintf(
 		"host=%s port=%s user=%s password=%s dbname=%s sslmode=%s",
 		c.DBHost, c.DBPort, c.DBUser, c.DBPassword, c.DBName, c.DBSSLMode,
 	)
+}
+
+// sanitizeDatabaseURL adapts a Neon-style connection string for lib/pq, which
+// (unlike real libpq) forwards any query parameter it doesn't recognize
+// straight to the server as a startup parameter — so params real libpq
+// clients handle locally, like channel_binding, make the server reject the
+// connection outright here.
+func sanitizeDatabaseURL(dbURL string) string {
+	dbURL = strings.Replace(dbURL, "postgresql://", "postgres://", 1)
+
+	u, err := url.Parse(dbURL)
+	if err != nil {
+		return dbURL
+	}
+	q := u.Query()
+	q.Del("channel_binding")
+	u.RawQuery = q.Encode()
+	return u.String()
 }
 
 func getEnv(key, fallback string) string {

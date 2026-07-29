@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { UserCircle, Mail, Users, Bell, RefreshCw, Plus, Trash2, Send, CheckCircle2, Clock, AlertCircle } from 'lucide-react'
-import { useApp } from '../context/AppContext.jsx'
+import { useApp, SUPPORTED_CURRENCIES } from '../context/AppContext.jsx'
 import { Field, inputClass, Button } from '../components/Bits.jsx'
 
 function Toggle({ checked, onChange, label, hint }) {
@@ -47,6 +47,7 @@ export default function Profile() {
   const { profile, updateProfile, updateNotifications, addMember, removeMember, resendInvite, reload } = useApp()
   const [familyName, setFamilyName] = useState(profile.familyName)
   const [email, setEmail] = useState(profile.email)
+  const [currency, setCurrency] = useState(profile.currency)
   const [memberName, setMemberName] = useState('')
   const [memberEmail, setMemberEmail] = useState('')
   const [memberError, setMemberError] = useState('')
@@ -54,7 +55,7 @@ export default function Profile() {
 
   const saveInfo = (e) => {
     e.preventDefault()
-    updateProfile({ familyName, email })
+    updateProfile({ familyName, email, currency })
   }
 
   const submitMember = async (e) => {
@@ -92,6 +93,15 @@ export default function Profile() {
           </Field>
           <Field label="Notification email">
             <input type="email" className={inputClass} value={email} onChange={(e) => setEmail(e.target.value)} />
+          </Field>
+          <Field label="Currency">
+            <select className={inputClass} value={currency} onChange={(e) => setCurrency(e.target.value)}>
+              {SUPPORTED_CURRENCIES.map((c) => (
+                <option key={c.code} value={c.code}>
+                  {c.label}
+                </option>
+              ))}
+            </select>
           </Field>
           <div className="sm:col-span-2 flex justify-end">
             <Button type="submit">Save Details</Button>

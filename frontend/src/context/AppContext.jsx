@@ -5,8 +5,19 @@ const AppContext = createContext(null)
 
 const EMPTY_CATEGORIES = { income: [], expense: [] }
 
+export const SUPPORTED_CURRENCIES = [
+  { code: 'BDT', label: 'Bangladeshi Taka (৳)' },
+  { code: 'KRW', label: 'Korean Won (₩)' },
+  { code: 'USD', label: 'US Dollar ($)' },
+]
+
+// formatCurrency() is called from ~30 places across the app without a
+// currency argument, so the active household's currency is tracked here
+// and used as the default rather than threading it through every call site.
+let activeCurrency = 'BDT'
+
 export function AppProvider({ children }) {
-  const [family, setFamily] = useState({ familyName: '', email: '', currency: 'USD' })
+  const [family, setFamily] = useState({ familyName: '', email: '', currency: 'BDT' })
   const [members, setMembers] = useState([])
   const [notifications, setNotifications] = useState({
     monthlyReminder: true,
@@ -70,6 +81,10 @@ export function AppProvider({ children }) {
   useEffect(() => {
     loadAll()
   }, [loadAll])
+
+  useEffect(() => {
+    activeCurrency = family.currency || 'BDT'
+  }, [family.currency])
 
   // ---- Transaction actions ----
   const addTransaction = async (tx) => {
@@ -269,8 +284,10 @@ export function topCategory(breakdown, categoryList) {
   return { id, amount, label: meta?.label || id, color: meta?.color || '#68746D' }
 }
 
-export function formatCurrency(amount, currency = 'USD') {
-  return new Intl.NumberFormat('en-US', {
+const CURRENCY_LOCALES = { BDT: 'en-BD', KRW: 'ko-KR', USD: 'en-US' }
+
+export function formatCurrency(amount, currency = activeCurrency) {
+  return new Intl.NumberFormat(CURRENCY_LOCALES[currency] || 'en-US', {
     style: 'currency',
     currency,
     maximumFractionDigits: 0,
