@@ -74,21 +74,12 @@ func Load() *Config {
 }
 
 func (c *Config) DSN() string {
-	if dbURL := os.Getenv("DATABASE_URL"); dbURL != "" {
-		dbURL = strings.Replace(dbURL, "postgresql://", "postgres://", 1)
-		return dbURL
-	}
-
 	return fmt.Sprintf(
 		"host=%s port=%s user=%s password=%s dbname=%s sslmode=%s",
-		c.DBHost,
-		c.DBPort,
-		c.DBUser,
-		c.DBPassword,
-		c.DBName,
-		c.DBSSLMode,
+		c.DBHost, c.DBPort, c.DBUser, c.DBPassword, c.DBName, c.DBSSLMode,
 	)
 }
+
 func getEnv(key, fallback string) string {
 	if v, ok := os.LookupEnv(key); ok && v != "" {
 		return v
