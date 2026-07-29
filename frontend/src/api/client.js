@@ -1,17 +1,39 @@
 const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080/api'
 
+// The session cookie only works when frontend and backend share a site
+// (local dev). In production (Vercel calling Render) it's cross-site, and
+// browsers may withhold it regardless of SameSite — so the login token is
+// also kept here and sent as an Authorization header on every request.
+const TOKEN_KEY = 'ledger_token'
+
+export function setToken(token) {
+  localStorage.setItem(TOKEN_KEY, token)
+}
+export function getToken() {
+  return localStorage.getItem(TOKEN_KEY)
+}
+export function clearToken() {
+  localStorage.removeItem(TOKEN_KEY)
+}
+
 let onUnauthorized = null
 export function setUnauthorizedHandler(fn) {
   onUnauthorized = fn
 }
 
 async function request(path, options = {}) {
+  const token = getToken()
   const res = await fetch(`${BASE_URL}${path}`, {
-    headers: { 'Content-Type': 'application/json' },
-    credentials: 'include',
     ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      ...options.headers,
+    },
+    credentials: 'include',
   })
   if (res.status === 401) {
+    clearToken()
     onUnauthorized?.()
   }
   if (!res.ok) {

@@ -198,7 +198,15 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	setAuthCookie(w, token, h.Cfg.Production)
-	httpx.JSON(w, http.StatusOK, user)
+	// The cookie is set for same-site local dev, but the frontend and
+	// backend are on different domains in production (Vercel/Render), where
+	// browsers may withhold cross-site cookies regardless of SameSite — so
+	// the token is also returned here for the frontend to send back as an
+	// Authorization: Bearer header.
+	httpx.JSON(w, http.StatusOK, struct {
+		models.User
+		Token string `json:"token"`
+	}{user, token})
 }
 
 // Me returns the signed-in user's profile, re-read from the database so

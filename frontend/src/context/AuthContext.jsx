@@ -1,5 +1,5 @@
 import React, { createContext, useCallback, useContext, useEffect, useState } from 'react'
-import { api, setUnauthorizedHandler } from '../api/client.js'
+import { api, setUnauthorizedHandler, setToken, clearToken } from '../api/client.js'
 
 const AuthContext = createContext(null)
 
@@ -37,7 +37,8 @@ export function AuthProvider({ children }) {
   }
 
   const login = async ({ email, password }) => {
-    const me = await api.post('/v1/auth/login', { email, password })
+    const { token, ...me } = await api.post('/v1/auth/login', { email, password })
+    setToken(token)
     setUser(me)
     setStatus('authenticated')
   }
@@ -46,6 +47,7 @@ export function AuthProvider({ children }) {
     try {
       await api.post('/v1/auth/logout')
     } finally {
+      clearToken()
       setUser(null)
       setStatus('unauthenticated')
     }
